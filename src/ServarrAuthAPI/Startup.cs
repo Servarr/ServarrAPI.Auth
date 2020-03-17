@@ -80,6 +80,7 @@ namespace ServarrAuthAPI
             
             services.AddHttpContextAccessor();
             services.AddTransient<TraktService>();
+            services.AddTransient<SpotifyService>();
 
             services
                 .AddControllers()
