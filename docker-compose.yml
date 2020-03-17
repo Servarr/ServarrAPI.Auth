@@ -21,9 +21,9 @@ services:
             - mysql
 
         environment:
-            - Servarr:DataDirectory=/data
-            - Servarr:Database=server=mysql;user id=root;password=${MYSQL_ROOT_PASSWORD};database=${MYSQL_DATABASE};CharSet=utf8mb4
-            - Servarr:ApiKey=
+            - ServarrAuthAPI:DataDirectory=/data
+            - ServarrAuthAPI:Database=server=mysql;user id=root;password=${MYSQL_ROOT_PASSWORD};database=${MYSQL_DATABASE};CharSet=utf8mb4
+            - ServarrAuthAPI:ApiKey=
             - Sentry:Dsn=
             - Trakt:ClientId=
             - Trakt:ClientSecret=
