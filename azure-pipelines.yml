@@ -1,0 +1,71 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- master
+- develop
+
+pr:
+- master
+- develop
+
+strategy:
+  matrix:
+    Linux:
+      osName: 'Linux'
+      imageName: 'ubuntu-latest'
+    Windows:
+      osName: 'Windows'
+      imageName: 'windows-latest'
+    Mac:
+      osName: 'macOS'
+      imageName: 'macOS-latest'
+
+pool:
+  vmImage: $(imageName)
+
+variables:
+  buildConfiguration: 'Release'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  'Servarr:Database': 'server=localhost;user id=root;password=root; database=servarrauthapi;CharSet=utf8mb4'
+  'Servarr:DataDirectory': $(Build.SourcesDirectory)
+
+steps:
+- task: UseDotNet@2
+  displayName: 'Install .net core 3.1'
+  inputs:
+    version: '3.1.102'
+    condition: ne(variables['osName'], 'Windows')
+- task: SonarCloudPrepare@1
+  displayName: 'Prepare SonarCloud'
+  condition: and(succeeded(), eq(variables['osName'], 'Windows'))
+  inputs:
+    SonarCloud: 'SonarCloud'
+    organization: 'servarr'
+    scannerMode: 'MSBuild'
+    projectKey: 'servarr_ServarrAPI.Auth'
+    projectName: 'ServarrAPI.Auth'
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    command: 'build'
+    arguments: '-c Release'
+    projects: 'src/ServarrAuthAPI.sln'
+- task: SonarCloudAnalyze@1
+  displayName: 'SonarCloud Analysis'
+  condition: and(succeeded(), eq(variables['osName'], 'Windows'))
+- task: SonarCloudPublish@1
+  displayName: 'Publish SonarCloud to Azure'
+  condition: and(succeeded(), eq(variables['osName'], 'Windows'))
+  inputs:
+    pollingTimeoutSec: '300'
+- powershell: |
+    dotnet tool install --global dotnet-ef
+    dotnet ef database update --project src/ServarrAuthAPI/ServarrAuthAPI.csproj --startup-project src/ServarrAuthAPI/ServarrAuthAPI.csproj
+  displayName: 'Test Database Migrations'
+  condition: and(succeeded(), eq(variables['osName'], 'Linux'))
+- publish: ./src/ServarrAuthAPI/bin/Release
+  artifact: '$(imageName) Package'
+  displayName: Publish Packages
