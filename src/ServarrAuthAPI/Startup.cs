@@ -64,7 +64,7 @@ namespace ServarrAuthAPI
                 {
                     UseCookies = false,
                     AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
-                });;
+                });
 
             services
                 .AddHttpClient(nameof(SpotifyService))
@@ -76,7 +76,7 @@ namespace ServarrAuthAPI
                 {
                     UseCookies = false,
                     AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
-                }); ;
+                });
             
             services.AddHttpContextAccessor();
             services.AddTransient<TraktService>();
@@ -104,7 +104,7 @@ namespace ServarrAuthAPI
             // Check data path
             if (!Path.IsPathRooted(ConfigAuthAPI.DataDirectory))
             {
-                throw new Exception("DataDirectory path must be absolute.");
+                throw new Exception($"DataDirectory path must be absolute.\nDataDirectory: {ConfigAuthAPI.DataDirectory}");
             }
 
             // Create
