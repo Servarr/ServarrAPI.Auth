@@ -24,6 +24,16 @@ namespace ServarrAuthAPI.Database
                 builder.Property(x => x.Target).IsRequired().HasMaxLength(255);
                 builder.Property(x => x.CreatedAt).IsRequired();
             });
+
+            modelBuilder.Entity<SpotifyEntity>(builder =>
+            {
+                builder.HasKey(k => k.Id);
+                builder.HasIndex(k => k.State);
+
+                builder.Property(x => x.State).IsRequired();
+                builder.Property(x => x.Target).IsRequired().HasMaxLength(255);
+                builder.Property(x => x.CreatedAt).IsRequired();
+            });
         }
     }
 }

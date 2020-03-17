@@ -15,7 +15,7 @@ namespace ServarrAuthAPI.Database.Migrations
                     Id = table.Column<int>(nullable: false)
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     State = table.Column<Guid>(nullable: false),
-                    Target = table.Column<string>(nullable: true),
+                    Target = table.Column<string>(maxLength: 255, nullable: false),
                     CreatedAt = table.Column<DateTime>(nullable: false)
                 },
                 constraints: table =>
@@ -37,6 +37,11 @@ namespace ServarrAuthAPI.Database.Migrations
                 {
                     table.PrimaryKey("PK_Trakt", x => x.Id);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Spotify_State",
+                table: "Spotify",
+                column: "State");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Trakt_State",

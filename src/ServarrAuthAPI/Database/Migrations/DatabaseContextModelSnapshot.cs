@@ -30,9 +30,13 @@ namespace ServarrAuthAPI.Database.Migrations
                         .HasColumnType("char(36)");
 
                     b.Property<string>("Target")
-                        .HasColumnType("longtext CHARACTER SET utf8mb4");
+                        .IsRequired()
+                        .HasColumnType("varchar(255) CHARACTER SET utf8mb4")
+                        .HasMaxLength(255);
 
                     b.HasKey("Id");
+
+                    b.HasIndex("State");
 
                     b.ToTable("Spotify");
                 });
