@@ -1,47 +1,41 @@
-﻿using Microsoft.AspNetCore;
+﻿using System;
+using System.IO;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
-using System;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Serilog;
-using Serilog.Events;
 
 namespace ServarrAuthAPI
 {
     public static class Program
     {
-        public static int Main(string[] args)
+        public static string BasePath => Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+
+        public static IConfiguration Configuration { get; } = new ConfigurationBuilder()
+            .SetBasePath(BasePath)
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production"}.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build();
+
+        public static void Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
-#if DEBUG
-                .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
-#endif
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
+                .ReadFrom.Configuration(Configuration)
                 .CreateLogger();
 
-            try
-            {
-                Log.Information("Starting web host");
-                CreateWebHostBuilder(args).Build().Run();
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "Host terminated unexpectedly");
-                return 1;
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
+            CreateHostBuilder(args).Build().Run();
         }
 
-        private static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseSentry()
-                .UseKestrel(x => x.AddServerHeader = false)
-                .UseStartup<Startup>()
-                .UseSerilog();
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+            .UseContentRoot(BasePath)
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+                webBuilder.UseSentry();
+            })
+            .UseSerilog();
     }
 }

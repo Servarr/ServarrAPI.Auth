@@ -1,71 +1,48 @@
-# ASP.NET Core
-# Build and test ASP.NET Core projects targeting .NET Core.
-# Add steps that run tests, create a NuGet package, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+variables:
+  majorVersion: '0.1.0'
+  minorVersion: $[counter('minorVersion', 1)]
+  version: '$(majorVersion).$(minorVersion)'
+  buildName: '$(Build.SourceBranchName).$(version)'
+  imageName: 'servarr/servarrapi.auth'
+  sentryOrg: 'servarr'
+  sentryUrl: 'https://sentry.servarr.com'
 
 trigger:
-- master
-- develop
+  branches:
+    include:
+    - master
 
 pr:
 - master
-- develop
-
-strategy:
-  matrix:
-    Linux:
-      osName: 'Linux'
-      imageName: 'ubuntu-latest'
-    Windows:
-      osName: 'Windows'
-      imageName: 'windows-latest'
-    Mac:
-      osName: 'macOS'
-      imageName: 'macOS-latest'
 
 pool:
-  vmImage: $(imageName)
-
-variables:
-  buildConfiguration: 'Release'
-  DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  'ServarrAuthAPI:Database': 'server=localhost;user id=root;password=root; database=servarrauthapi;CharSet=utf8mb4'
-  'ServarrAuthAPI:DataDirectory': $(Build.SourcesDirectory)
+  vmImage: 'Ubuntu-18.04'
 
 steps:
-- task: UseDotNet@2
-  displayName: 'Install .net core 3.1'
+- powershell: Write-Host "##vso[build.updatebuildnumber]$($env:VERSION)"
+  displayName: Set Build Name
+- bash: |
+    sed -i'' -e "s/<AssemblyVersion>[0-9.*]\+<\/AssemblyVersion>/<AssemblyVersion>$VERSION<\/AssemblyVersion>/g" src/Directory.Build.props
+    sed -i'' -e "s/<AssemblyConfiguration>[\$()A-Za-z-]\+<\/AssemblyConfiguration>/<AssemblyConfiguration>${BUILD_SOURCEBRANCHNAME}<\/AssemblyConfiguration>/g" src/Directory.Build.props
+- task: Docker@2
+  displayName: Build image
   inputs:
-    version: '3.1.102'
-    condition: ne(variables['osName'], 'Windows')
-- task: SonarCloudPrepare@1
-  displayName: 'Prepare SonarCloud'
-  condition: and(succeeded(), eq(variables['osName'], 'Windows'))
-  inputs:
-    SonarCloud: 'SonarCloud'
-    organization: 'servarr'
-    scannerMode: 'MSBuild'
-    projectKey: 'servarr_ServarrAPI.Auth'
-    projectName: 'ServarrAPI.Auth'
-- task: DotNetCoreCLI@2
-  displayName: Build
-  inputs:
-    command: 'build'
-    arguments: '-c Release'
-    projects: 'src/ServarrAuthAPI.sln'
-- task: SonarCloudAnalyze@1
-  displayName: 'SonarCloud Analysis'
-  condition: and(succeeded(), eq(variables['osName'], 'Windows'))
-- task: SonarCloudPublish@1
-  displayName: 'Publish SonarCloud to Azure'
-  condition: and(succeeded(), eq(variables['osName'], 'Windows'))
-  inputs:
-    pollingTimeoutSec: '300'
-- powershell: |
-    dotnet tool install --global dotnet-ef
-    dotnet ef database update --project src/ServarrAuthAPI/ServarrAuthAPI.csproj --startup-project src/ServarrAuthAPI/ServarrAuthAPI.csproj
-  displayName: 'Test Database Migrations'
-  condition: and(succeeded(), eq(variables['osName'], 'Linux'))
-- publish: ./src/ServarrAuthAPI/bin/Release
-  artifact: '$(imageName) Package'
-  displayName: Publish Packages
+    containerRegistry: 'dockerhub'
+    repository: $(imageName)
+    command: buildAndPush
+    Dockerfile: Dockerfile
+    tags: |
+      latest
+      $(Build.SourceBranchName)
+- bash: |
+    echo "Creating sentry release"
+    curl -sL https://sentry.io/get-cli/ | bash
+    sentry-cli releases new --finalize -p servarr-auth "${VERSION}"
+    sentry-cli releases set-commits --auto "${VERSION}"
+    sentry-cli releases deploys "${VERSION}" new -e production
+  displayName: Create sentry release
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  env:
+    SENTRY_AUTH_TOKEN: $(sentryAuthTokenServarr)
+    SENTRY_ORG: $(sentryOrg)
+    SENTRY_URL: $(sentryUrl)

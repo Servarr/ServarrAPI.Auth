@@ -1,6 +1,6 @@
 ﻿namespace ServarrAuthAPI.Options
 {
-    public class SpotifyOptions
+    public class OAuthOptions
     {
         public string RedirectUri { get; set; }
         public string ClientId { get; set; }
