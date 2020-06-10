@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using ServarrAuthAPI.Options;
-using ServarrAuthAPI.Services.Spotify;
+using ServarrAuthAPI.Services.OAuth2;
 
 namespace ServarrAuthAPI
 {
@@ -21,11 +21,9 @@ namespace ServarrAuthAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<TraktOptions>(Configuration.GetSection("Trakt"));
-            services.Configure<SpotifyOptions>(Configuration.GetSection("Spotify"));
+            services.Configure<AuthOptions>(Configuration.GetSection("Auth"));
 
-            services.AddSingleton<SpotifyService>();
-            services.AddSingleton<TraktService>();
+            services.AddSingleton<OAuth2Service>();
 
             services
                 .AddControllers()

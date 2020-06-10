@@ -1,35 +1,15 @@
 version: '2'
 services:
-    mysql:
-        image: mysql/mysql-server
-        restart: always
-        environment:
-            - MYSQL_ROOT_PASSWORD
-            - MYSQL_DATABASE=servarrauthapi
-            - MYSQL_USER=root
-            - MYSQL_PASSWORD=${MYSQL_ROOT_PASSWORD}
-        volumes:
-          - ./my.cnf:/etc/my.cnf
-            
-    servarrupdate:
-        build: .
+
+    servarrauth:
+
         restart: always
         ports:
             - "5000:5000"
 
-        links:
-            - mysql
-
         environment:
-            - ServarrAuthAPI:DataDirectory=/data
-            - ServarrAuthAPI:Database=server=mysql;user id=root;password=${MYSQL_ROOT_PASSWORD};database=${MYSQL_DATABASE};CharSet=utf8mb4
-            - ServarrAuthAPI:ApiKey=
             - Sentry:Dsn=
             - Trakt:ClientId=
             - Trakt:ClientSecret=
             - Spotify:ClientId=
             - Spotify:ClientSecret=
-            - ASPNETCORE_URLS=http://0.0.0.0:5000
-
-        volumes:
-            - ./servarrauthapi-data:/data
