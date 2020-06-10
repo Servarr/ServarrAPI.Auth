@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace ServarrAuthAPI.OAuth
 {
-    public class OAuthTokenResquest
+    public class OAuth2TokenRequest
     {
         [JsonPropertyName("grant_type")]
         public string GrantType { get; set; }
