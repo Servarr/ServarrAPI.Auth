@@ -6,13 +6,13 @@ using ServarrAuthAPI.Services.OAuth2;
 
 namespace ServarrAuthAPI.Controllers
 {
-    public class OAuthController : Controller
+    public class OAuth2Controller : Controller
     {
         private readonly AuthOptions _options;
         private readonly OAuth2Service _authService;
 
-        public OAuthController(IOptions<AuthOptions> options,
-                               OAuth2Service authService)
+        public OAuth2Controller(IOptions<AuthOptions> options,
+                                OAuth2Service authService)
         {
             _options = options.Value;
             _authService = authService;
