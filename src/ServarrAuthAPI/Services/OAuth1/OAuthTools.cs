@@ -214,6 +214,7 @@ namespace ServarrAuthAPI.Services.OAuth1
 
             foreach (var parameter in copy)
             {
+                parameter.Name = UrlEncodeStrict(parameter.Name);
                 parameter.Value = UrlEncodeStrict(parameter.Value);
             }
 
