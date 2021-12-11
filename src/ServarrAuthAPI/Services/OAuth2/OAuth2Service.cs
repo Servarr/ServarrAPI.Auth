@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Security.Authentication;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -16,7 +17,7 @@ namespace ServarrAuthAPI.Services.OAuth2
     {
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
         {
-            IgnoreNullValues = true
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
 
         private readonly AuthOptions _options;
