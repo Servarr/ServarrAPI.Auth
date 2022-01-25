@@ -6,7 +6,7 @@ This is the auth API of Lidarr, Radarr, and Readarr.
 
 ## Development
 
-If you want to work on **ServarrAPI.Auth**, make sure you have [.NET 5.0 SDK](https://dotnet.microsoft.com/download/dotnet/5.0) installed and [Visual Studio 2019 v16.8](https://www.visualstudio.com/vs).
+If you want to work on **ServarrAPI.Auth**, make sure you have [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0) installed and [Visual Studio 2022](https://www.visualstudio.com/vs).
 
 ## Using Docker
 
